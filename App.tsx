@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { ScrollView, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
-import Header from '../../components/Header';
-import BottomNav from '../../components/BottomNav';
-import CurrentScreen from '../../screens/CurrentScreen';
-import ForecastScreen from '../../screens/ForcastScreen';
-import SearchScreen from '../../screens/SearchScreen';
-import SettingsScreen from '../../screens/SettingsScreen';
-import AuthScreen from '../../screens/AuthScreen';
+import Header from './components/Header';
+import BottomNav from './components/BottomNav';
+import CurrentScreen from './screens/CurrentScreen';
+import ForecastScreen from './screens/ForcastScreen';
+import SearchScreen from './screens/SearchScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import AuthScreen from './screens/AuthScreen';
 
-export default function Index() {
+export default function App() {
   const [activeTab, setActiveTab] = useState('current');
 
   return (
