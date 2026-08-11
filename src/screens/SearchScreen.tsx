@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Cloud, Sun, CloudRain, Plus } from 'lucide-react-native';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 const savedCities = [
@@ -31,6 +32,8 @@ const savedCities = [
 ];
 
 export default function SearchScreen() {
+  const { heroMuted } = useAppearance();
+
   return (
     <View style={styles.container}>
       <View style={[styles.searchWrapper, shadows.card]}>
@@ -45,7 +48,7 @@ export default function SearchScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>Current location</Text>
+        <Text style={[styles.sectionHeader, { color: heroMuted }]}>Current location</Text>
         <View style={[styles.currentCard, shadows.soft]}>
           <View style={styles.currentLeft}>
             <Text style={styles.cityName}>Calgary</Text>
@@ -57,7 +60,7 @@ export default function SearchScreen() {
 
       <View style={styles.section}>
         <View style={styles.savedHeader}>
-          <Text style={styles.sectionHeader}>Saved cities</Text>
+          <Text style={[styles.sectionHeader, { color: heroMuted }]}>Saved cities</Text>
           <TouchableOpacity hitSlop={8}>
             <Text style={styles.editLink}>Edit</Text>
           </TouchableOpacity>
@@ -126,7 +129,6 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     ...type.label,
-    color: colors.textMuted,
   },
   currentCard: {
     backgroundColor: colors.cardWhite,

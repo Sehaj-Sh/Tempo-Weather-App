@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Sun, CloudRain, Cloud } from 'lucide-react-native';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 const forecastDays = [
@@ -14,11 +15,13 @@ const forecastDays = [
 ];
 
 export default function ForecastScreen() {
+  const { heroText, heroMuted } = useAppearance();
+
   return (
     <View style={styles.container}>
       <View style={styles.titleBlock}>
-        <Text style={styles.subtitle}>Local weather</Text>
-        <Text style={styles.title}>Calgary, AB</Text>
+        <Text style={[styles.subtitle, { color: heroMuted }]}>Local weather</Text>
+        <Text style={[styles.title, { color: heroText }]}>Calgary, AB</Text>
       </View>
 
       <View style={styles.list}>
@@ -61,11 +64,9 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...type.label,
-    color: colors.textMuted,
   },
   title: {
     ...type.title,
-    color: colors.text,
   },
   list: {
     gap: spacing.md,

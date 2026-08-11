@@ -9,6 +9,10 @@ import {
   Clock,
   ChevronRight,
 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import ColorPaletteModal from '@/components/ColorPaletteModal';
+import { useAppearance } from '@/context/AppearanceContext';
+import { AppearanceMode } from '@/constants/appearance';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 interface SettingsScreenProps {
@@ -16,7 +20,55 @@ interface SettingsScreenProps {
 }
 
 export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
-  const [appearance, setAppearance] = useState<'light' | 'dark' | 'custom'>('light');
+  const { mode, customColor, setMode, setCustomColor, heroMuted } = useAppearance();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  const options: { id: AppearanceMode; label: string; preview: React.ReactNode }[] = [
+    {
+      id: 'light',
+      label: 'Light',
+      preview: (
+        <LinearGradient
+          colors={['#A9C9F8', '#B7A6F0']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.swatch}
+        />
+      ),
+    },
+    {
+      id: 'dark',
+      label: 'Dark',
+      preview: (
+        <LinearGradient
+          colors={['#1B1F3B', '#2A2150']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.swatch}
+        />
+      ),
+    },
+    {
+      id: 'custom',
+      label: 'Customize',
+      preview: (
+        <LinearGradient
+          colors={[customColor, colors.appearanceCustom]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.swatch}
+        />
+      ),
+    },
+  ];
+
+  const handleSelect = (id: AppearanceMode) => {
+    if (id === 'custom') {
+      setPaletteOpen(true);
+      return;
+    }
+    setMode(id);
+  };
 
   return (
     <View style={styles.container}>
@@ -36,7 +88,7 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
       </TouchableOpacity>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Units</Text>
+        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Units</Text>
         <View style={[styles.group, shadows.card]}>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
@@ -63,7 +115,7 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Notifications</Text>
+        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Notifications</Text>
         <View style={[styles.group, shadows.card]}>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
@@ -84,32 +136,22 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Appearance</Text>
+        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Appearance</Text>
         <View style={[styles.appearanceCard, shadows.card]}>
-          {(
-            [
-              { id: 'light', label: 'Light', color: colors.appearanceLight },
-              { id: 'dark', label: 'Dark', color: colors.appearanceDark },
-              { id: 'custom', label: 'Customize', color: colors.appearanceCustom },
-            ] as const
-          ).map((option) => (
+          {options.map((option) => (
             <TouchableOpacity
               key={option.id}
               style={styles.appearanceOption}
-              onPress={() => setAppearance(option.id)}
+              onPress={() => handleSelect(option.id)}
               activeOpacity={0.8}
             >
-              <View
-                style={[
-                  styles.swatch,
-                  { backgroundColor: option.color },
-                  appearance === option.id && styles.swatchSelected,
-                ]}
-              />
+              <View style={[mode === option.id && styles.swatchSelected]}>
+                {option.preview}
+              </View>
               <Text
                 style={[
                   styles.appearanceLabel,
-                  appearance === option.id && styles.appearanceLabelActive,
+                  mode === option.id && styles.appearanceLabelActive,
                 ]}
               >
                 {option.label}
@@ -120,7 +162,7 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
+        <Text style={[styles.sectionTitle, { color: heroMuted }]}>About</Text>
         <View style={[styles.group, shadows.card]}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Version</Text>
@@ -132,6 +174,16 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ColorPaletteModal
+        visible={paletteOpen}
+        selectedColor={customColor}
+        onSelect={(color) => {
+          setCustomColor(color);
+          setMode('custom');
+        }}
+        onClose={() => setPaletteOpen(false)}
+      />
     </View>
   );
 }
@@ -178,7 +230,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...type.label,
-    color: colors.textMuted,
     paddingHorizontal: spacing.xs,
   },
   group: {
@@ -245,8 +296,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   swatchSelected: {
+    borderRadius: radii.md + 2,
     borderWidth: 2.5,
     borderColor: colors.text,
+    padding: 2,
   },
   appearanceLabel: {
     ...type.caption,

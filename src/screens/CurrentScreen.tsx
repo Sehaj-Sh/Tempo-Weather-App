@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Thermometer, Droplets, Sun, Wind, Cloud } from 'lucide-react-native';
 import MetricCard from '@/components/MetricCard';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 const hourly = [
@@ -13,19 +14,21 @@ const hourly = [
 ];
 
 export default function CurrentScreen() {
+  const { heroText, heroMuted } = useAppearance();
+
   return (
     <View style={styles.container}>
       <View style={styles.heroSection}>
-        <Text style={styles.cityText}>Calgary, AB</Text>
-        <Text style={styles.tempText}>28°</Text>
-        <Text style={styles.conditionText}>Cloudy</Text>
+        <Text style={[styles.cityText, { color: heroMuted }]}>Calgary, AB</Text>
+        <Text style={[styles.tempText, { color: heroText }]}>28°</Text>
+        <Text style={[styles.conditionText, { color: heroText }]}>Cloudy</Text>
         <View style={styles.highLowRow}>
-          <Text style={styles.highLowText}>
-            H <Text style={styles.highLowValue}>35°</Text>
+          <Text style={[styles.highLowText, { color: heroMuted }]}>
+            H <Text style={[styles.highLowValue, { color: heroText }]}>35°</Text>
           </Text>
-          <View style={styles.dot} />
-          <Text style={styles.highLowText}>
-            L <Text style={styles.highLowValue}>15°</Text>
+          <View style={[styles.dot, { backgroundColor: heroMuted }]} />
+          <Text style={[styles.highLowText, { color: heroMuted }]}>
+            L <Text style={[styles.highLowValue, { color: heroText }]}>15°</Text>
           </Text>
         </View>
       </View>
@@ -57,7 +60,7 @@ export default function CurrentScreen() {
         />
       </View>
 
-      <Text style={styles.sectionLabel}>Hourly</Text>
+      <Text style={[styles.sectionLabel, { color: heroMuted }]}>Hourly</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -87,16 +90,13 @@ const styles = StyleSheet.create({
   },
   cityText: {
     ...type.headline,
-    color: colors.textSecondary,
     fontWeight: '500',
   },
   tempText: {
     ...type.hero,
-    color: colors.text,
   },
   conditionText: {
     ...type.headline,
-    color: colors.text,
     fontWeight: '500',
   },
   highLowRow: {
@@ -107,18 +107,15 @@ const styles = StyleSheet.create({
   },
   highLowText: {
     ...type.caption,
-    color: colors.textMuted,
     fontWeight: '500',
   },
   highLowValue: {
-    color: colors.text,
     fontWeight: '600',
   },
   dot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: colors.textSoft,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -128,7 +125,6 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     ...type.label,
-    color: colors.textMuted,
     marginBottom: -spacing.sm,
   },
   hourlyRow: {

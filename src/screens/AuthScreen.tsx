@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 interface AuthScreenProps {
@@ -42,14 +43,17 @@ export default function AuthScreen({ onLogin, initialMode = 'login' }: AuthScree
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { heroText, heroMuted } = useAppearance();
 
   const isLogin = mode === 'login';
 
   return (
     <View style={styles.container}>
       <View style={styles.heading}>
-        <Text style={styles.title}>{isLogin ? 'Welcome back' : 'Create account'}</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: heroText }]}>
+          {isLogin ? 'Welcome back' : 'Create account'}
+        </Text>
+        <Text style={[styles.subtitle, { color: heroMuted }]}>
           {isLogin ? 'Sign in to sync your saved cities' : 'Save locations and get alerts'}
         </Text>
       </View>
@@ -149,11 +153,9 @@ const styles = StyleSheet.create({
   },
   title: {
     ...type.title,
-    color: colors.text,
   },
   subtitle: {
     ...type.caption,
-    color: colors.textMuted,
     textAlign: 'center',
   },
   card: {
