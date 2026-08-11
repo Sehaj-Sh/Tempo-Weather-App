@@ -5,14 +5,14 @@ import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+
 import { MapPin, X } from 'lucide-react-native';
 import { PlaceResult } from '@/services/weatherApi';
 import { colors, radii, spacing, type } from '@/constants/theme';
+import { AppText, AppTextInput } from '@/components/AppText';
 
 interface AddCityModalProps {
   visible: boolean;
@@ -81,16 +81,16 @@ export default function AddCityModal({
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add a city</Text>
+            <AppText style={styles.title}>Add a city</AppText>
             <TouchableOpacity onPress={onClose} hitSlop={10} accessibilityLabel="Close">
               <X size={20} color={colors.textMuted} strokeWidth={2} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.subtitle}>Start typing to see place suggestions</Text>
+          <AppText style={styles.subtitle}>Start typing to see place suggestions</AppText>
 
           <View style={styles.inputWrap}>
             <MapPin size={16} color={colors.textMuted} strokeWidth={1.8} />
-            <TextInput
+            <AppTextInput
               autoFocus
               value={query}
               onChangeText={setQuery}
@@ -105,7 +105,7 @@ export default function AddCityModal({
             {loading ? <ActivityIndicator size="small" color={colors.link} /> : null}
           </View>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <AppText style={styles.error}>{error}</AppText> : null}
 
           <FlatList
             data={suggestions}
@@ -114,7 +114,7 @@ export default function AddCityModal({
             style={styles.list}
             ListEmptyComponent={
               !loading && query.trim().length >= 2 && !error ? (
-                <Text style={styles.empty}>No results</Text>
+                <AppText style={styles.empty}>No results</AppText>
               ) : null
             }
             renderItem={({ item }) => (
@@ -126,10 +126,10 @@ export default function AddCityModal({
                   onClose();
                 }}
               >
-                <Text style={styles.suggestionName}>{item.name}</Text>
-                <Text style={styles.suggestionMeta}>
+                <AppText style={styles.suggestionName}>{item.name}</AppText>
+                <AppText style={styles.suggestionMeta}>
                   {[item.region, item.country].filter(Boolean).join(', ')}
-                </Text>
+                </AppText>
               </TouchableOpacity>
             )}
           />

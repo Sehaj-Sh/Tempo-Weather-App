@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+
 import { useAppearance } from '@/context/AppearanceContext';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
+import { AppText, AppTextInput } from '@/components/AppText';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -69,21 +69,21 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
   return (
     <View style={styles.container}>
       <View style={styles.heading}>
-        <Text style={[styles.title, { color: heroText }]}>
+        <AppText style={[styles.title, { color: heroText }]}>
           {isLogin ? 'Welcome back' : 'Create account'}
-        </Text>
-        <Text style={[styles.subtitle, { color: heroMuted }]}>
+        </AppText>
+        <AppText style={[styles.subtitle, { color: heroMuted }]}>
           {isLogin
             ? 'Sign in with your saved account on this device'
             : 'Create a local account to personalize Tempo'}
-        </Text>
+        </AppText>
       </View>
 
       <View style={[styles.card, shadows.soft]}>
         {!isLogin ? (
           <View style={styles.field}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput
+            <AppText style={styles.label}>Name</AppText>
+            <AppTextInput
               placeholder="Your name"
               placeholderTextColor={colors.textSoft}
               value={name}
@@ -96,8 +96,8 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
         ) : null}
 
         <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
+          <AppText style={styles.label}>Email</AppText>
+          <AppTextInput
             placeholder="you@email.com"
             placeholderTextColor={colors.textSoft}
             value={email}
@@ -110,8 +110,8 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
+          <AppText style={styles.label}>Password</AppText>
+          <AppTextInput
             placeholder="Enter password"
             placeholderTextColor={colors.textSoft}
             value={password}
@@ -124,8 +124,8 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
 
         {!isLogin ? (
           <View style={styles.field}>
-            <Text style={styles.label}>Confirm password</Text>
-            <TextInput
+            <AppText style={styles.label}>Confirm password</AppText>
+            <AppTextInput
               placeholder="Confirm password"
               placeholderTextColor={colors.textSoft}
               value={confirmPassword}
@@ -137,8 +137,8 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
           </View>
         ) : null}
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {success ? <Text style={styles.success}>{success}</Text> : null}
+        {error ? <AppText style={styles.error}>{error}</AppText> : null}
+        {success ? <AppText style={styles.success}>{success}</AppText> : null}
 
         <TouchableOpacity
           onPress={() => void handleSubmit()}
@@ -149,9 +149,9 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
           {submitting ? (
             <ActivityIndicator color={buttonText} />
           ) : (
-            <Text style={[styles.primaryButtonText, { color: buttonText }]}>
+            <AppText style={[styles.primaryButtonText, { color: buttonText }]}>
               {isLogin ? 'Log in' : 'Create account'}
-            </Text>
+            </AppText>
           )}
         </TouchableOpacity>
       </View>
@@ -165,10 +165,10 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
               setSuccess(null);
             }}
           >
-            <Text style={[styles.linkText, { color: heroMuted }]}>
+            <AppText style={[styles.linkText, { color: heroMuted }]}>
               Don’t have an account?{' '}
-              <Text style={[styles.linkStrong, { color: accentOnHero }]}>Sign up</Text>
-            </Text>
+              <AppText style={[styles.linkStrong, { color: accentOnHero }]}>Sign up</AppText>
+            </AppText>
           </TouchableOpacity>
         </View>
       ) : (
@@ -180,10 +180,10 @@ export default function AuthScreen({ onSuccess, initialMode = 'login' }: AuthScr
           }}
           style={styles.links}
         >
-          <Text style={[styles.linkText, { color: heroMuted }]}>
+          <AppText style={[styles.linkText, { color: heroMuted }]}>
             Already have an account?{' '}
-            <Text style={[styles.linkStrong, { color: accentOnHero }]}>Log in</Text>
-          </Text>
+            <AppText style={[styles.linkStrong, { color: accentOnHero }]}>Log in</AppText>
+          </AppText>
         </TouchableOpacity>
       )}
     </View>
