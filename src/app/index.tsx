@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '@/components/Header';
@@ -12,6 +13,7 @@ import AuthScreen from '@/screens/AuthScreen';
 import { useAppearance } from '@/context/AppearanceContext';
 import { useWeather } from '@/context/WeatherContext';
 import { colors, spacing, type } from '@/constants/theme';
+import { AppText } from '@/components/AppText';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState('current');
@@ -50,9 +52,9 @@ export default function Index() {
           {showCenteredLoader ? (
             <View style={styles.loaderBlock}>
               <ActivityIndicator size="large" color={colors.link} />
-              <Text style={[styles.loaderText, { color: heroMuted }]}>
+              <AppText style={[styles.loaderText, { color: heroMuted }]}>
                 {error || 'Getting your local weather…'}
-              </Text>
+              </AppText>
             </View>
           ) : (
             <>

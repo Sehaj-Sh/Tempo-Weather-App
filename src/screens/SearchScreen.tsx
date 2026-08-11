@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
   StyleSheet,
 } from 'react-native';
+
 import { MapPin, Plus, Trash2 } from 'lucide-react-native';
 import AddCityModal from '@/components/AddCityModal';
 import { useAppearance } from '@/context/AppearanceContext';
@@ -24,6 +23,7 @@ import {
   formatTemp,
   windSpeedLabel,
 } from '@/utils/units';
+import { AppText, AppTextInput } from '@/components/AppText';
 
 interface SearchScreenProps {
   onCitySelected?: () => void;
@@ -101,7 +101,7 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
         <View style={styles.searchIcon}>
           <MapPin size={18} color={colors.textMuted} strokeWidth={1.8} />
         </View>
-        <TextInput
+        <AppTextInput
           value={query}
           onChangeText={setQuery}
           placeholder="Search city or place"
@@ -128,17 +128,17 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
               onPress={() => void handleSelectSuggestion(item)}
               activeOpacity={0.8}
             >
-              <Text style={styles.suggestionName}>{item.name}</Text>
-              <Text style={styles.suggestionMeta}>
+              <AppText style={styles.suggestionName}>{item.name}</AppText>
+              <AppText style={styles.suggestionMeta}>
                 {[item.region, item.country].filter(Boolean).join(', ')}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
       ) : null}
 
       <View style={styles.section}>
-        <Text style={[styles.sectionHeader, { color: heroMuted }]}>Current location</Text>
+        <AppText style={[styles.sectionHeader, { color: heroMuted }]}>Current location</AppText>
         <TouchableOpacity
           style={[styles.currentCard, shadows.soft]}
           activeOpacity={0.85}
@@ -147,25 +147,25 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
           {deviceWeather ? (
             <>
               <View style={styles.currentLeft}>
-                <Text style={styles.cityName}>{deviceWeather.place.name}</Text>
-                <Text style={styles.cityDetails}>
+                <AppText style={styles.cityName}>{deviceWeather.place.name}</AppText>
+                <AppText style={styles.cityDetails}>
                   {getWeatherLabel(deviceWeather.current.weatherCode)} · H{' '}
                   {formatTemp(deviceWeather.current.high, temperatureUnit)} · L{' '}
                   {formatTemp(deviceWeather.current.low, temperatureUnit)}
-                </Text>
+                </AppText>
               </View>
-              <Text style={styles.currentTemp}>
+              <AppText style={styles.currentTemp}>
                 {formatTemp(deviceWeather.current.temperature, temperatureUnit)}
-              </Text>
+              </AppText>
             </>
           ) : (
             <View style={styles.currentLeft}>
-              <Text style={styles.cityName}>
+              <AppText style={styles.cityName}>
                 {devicePlace?.name || 'Use device location'}
-              </Text>
-              <Text style={styles.cityDetails}>
+              </AppText>
+              <AppText style={styles.cityDetails}>
                 {isLoading ? 'Updating…' : 'Tap to enable location weather'}
-              </Text>
+              </AppText>
             </View>
           )}
         </TouchableOpacity>
@@ -173,17 +173,17 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
 
       <View style={styles.section}>
         <View style={styles.savedHeader}>
-          <Text style={[styles.sectionHeader, { color: heroMuted }]}>Saved cities</Text>
+          <AppText style={[styles.sectionHeader, { color: heroMuted }]}>Saved cities</AppText>
           <TouchableOpacity hitSlop={8} onPress={() => setEditing((prev) => !prev)}>
-            <Text style={[styles.editLink, { color: heroMuted }]}>
+            <AppText style={[styles.editLink, { color: heroMuted }]}>
               {editing ? 'Done' : 'Edit'}
-            </Text>
+            </AppText>
           </TouchableOpacity>
         </View>
 
         <View style={styles.cityList}>
           {savedCities.length === 0 ? (
-            <Text style={styles.emptySaved}>No saved cities yet.</Text>
+            <AppText style={styles.emptySaved}>No saved cities yet.</AppText>
           ) : (
             savedCities.map((city) => {
               const weather = savedWeatherById[city.id];
@@ -202,14 +202,14 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
                   onPress={() => void handleSelectSaved(city.id)}
                 >
                   <View style={styles.cityLeft}>
-                    <Text style={styles.savedCity}>{city.name}</Text>
+                    <AppText style={styles.savedCity}>{city.name}</AppText>
                     <View style={styles.metaRow}>
                       <Icon size={14} color={colors.textMuted} strokeWidth={1.7} />
-                      <Text style={styles.metaText}>
+                      <AppText style={styles.metaText}>
                         {weather
                           ? `${getWeatherLabel(weather.current.weatherCode)} · ${formatLocalTime(weather.current.time)}`
                           : 'Fetching weather…'}
-                      </Text>
+                      </AppText>
                     </View>
                   </View>
                   {editing ? (
@@ -223,12 +223,12 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
                     </TouchableOpacity>
                   ) : (
                     <View style={styles.cityRight}>
-                      <Text style={styles.savedTemp}>
+                      <AppText style={styles.savedTemp}>
                         {weather
                           ? formatTemp(weather.current.temperature, temperatureUnit)
                           : '—'}
-                      </Text>
-                      <Text style={styles.detailText}>{detail}</Text>
+                      </AppText>
+                      <AppText style={styles.detailText}>{detail}</AppText>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -246,7 +246,7 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
         <View style={[styles.plusCircle, { borderColor: accent }]}>
           <Plus size={14} color={accent} strokeWidth={2.2} />
         </View>
-        <Text style={[styles.addButtonText, { color: accent }]}>Add new city</Text>
+        <AppText style={[styles.addButtonText, { color: accent }]}>Add new city</AppText>
       </TouchableOpacity>
 
       <AddCityModal

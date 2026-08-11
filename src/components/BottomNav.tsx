@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
+
 import { Sun, Calendar, MapPin, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
+import { AppText } from '@/components/AppText';
 
 interface Props {
   activeTab: string;
@@ -41,7 +43,7 @@ export default function BottomNav({ activeTab, setActiveTab }: Props) {
               color={isActive ? navActiveIcon : navIdleIcon}
               strokeWidth={isActive ? 2 : 1.6}
             />
-            <Text
+            <AppText
               style={[
                 styles.tabLabel,
                 { color: isActive ? navActiveIcon : navIdleIcon },
@@ -49,7 +51,7 @@ export default function BottomNav({ activeTab, setActiveTab }: Props) {
               ]}
             >
               {label}
-            </Text>
+            </AppText>
           </Pressable>
         );
       })}

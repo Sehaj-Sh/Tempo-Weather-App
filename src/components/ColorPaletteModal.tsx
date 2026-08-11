@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import {
   Modal,
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Pressable,
 } from 'react-native';
+
 import { Check } from 'lucide-react-native';
 import { customColorOptions } from '@/constants/appearance';
 import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, spacing, type } from '@/constants/theme';
+import { AppText } from '@/components/AppText';
 
 interface ColorPaletteModalProps {
   visible: boolean;
@@ -39,8 +40,8 @@ export default function ColorPaletteModal({
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
-          <Text style={styles.title}>Choose background</Text>
-          <Text style={styles.subtitle}>Pick a color, then press Done to apply</Text>
+          <AppText style={styles.title}>Choose background</AppText>
+          <AppText style={styles.subtitle}>Pick a color, then press Done to apply</AppText>
 
           <View style={styles.grid}>
             {customColorOptions.map((color) => {
@@ -66,7 +67,7 @@ export default function ColorPaletteModal({
             }}
             activeOpacity={0.85}
           >
-            <Text style={[styles.doneText, { color: buttonText }]}>Done</Text>
+            <AppText style={[styles.doneText, { color: buttonText }]}>Done</AppText>
           </TouchableOpacity>
         </Pressable>
       </Pressable>

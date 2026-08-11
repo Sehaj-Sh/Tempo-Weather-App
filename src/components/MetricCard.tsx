@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
+import { AppText } from '@/components/AppText';
 
 interface MetricCardProps {
   icon: React.ReactNode;
@@ -23,12 +25,12 @@ export default function MetricCard({
     <View style={[styles.card, shadows.card]}>
       <View style={styles.header}>
         <View style={styles.iconWrap}>{icon}</View>
-        <Text style={styles.title}>{title}</Text>
+        <AppText style={styles.title}>{title}</AppText>
       </View>
 
       <View style={styles.valueRow}>
-        <Text style={styles.value}>{value}</Text>
-        {unit ? <Text style={styles.unit}>{unit}</Text> : null}
+        <AppText style={styles.value}>{value}</AppText>
+        {unit ? <AppText style={styles.unit}>{unit}</AppText> : null}
       </View>
 
       {typeof progress === 'number' && (
@@ -39,7 +41,7 @@ export default function MetricCard({
 
       {badge ? (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge}</Text>
+          <AppText style={styles.badgeText}>{badge}</AppText>
         </View>
       ) : null}
     </View>

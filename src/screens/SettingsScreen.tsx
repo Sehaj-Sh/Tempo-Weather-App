@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+
 import {
   User,
   Pencil,
@@ -14,6 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePreferences } from '@/context/PreferencesContext';
 import { AppearanceMode } from '@/constants/appearance';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
+import { AppText } from '@/components/AppText';
 
 interface SettingsScreenProps {
   onLoginPress: () => void;
@@ -89,24 +91,24 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
           <User size={20} color={colors.textSecondary} strokeWidth={1.8} />
         </View>
         <View style={styles.profileCopy}>
-          <Text style={styles.profileText}>{isLoggedIn ? user?.name : 'Log in'}</Text>
-          <Text style={styles.profileHint}>
+          <AppText style={styles.profileText}>{isLoggedIn ? user?.name : 'Log in'}</AppText>
+          <AppText style={styles.profileHint}>
             {isLoggedIn ? user?.email : 'Save your account on this device'}
-          </Text>
+          </AppText>
         </View>
         {!isLoggedIn ? <Pencil size={16} color={colors.textMuted} strokeWidth={1.8} /> : null}
       </TouchableOpacity>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Units</Text>
+        <AppText style={[styles.sectionTitle, { color: heroMuted }]}>Units</AppText>
         <View style={[styles.group, shadows.card]}>
           <TouchableOpacity style={styles.row} onPress={toggleTemperatureUnit} activeOpacity={0.8}>
             <View style={styles.rowLeft}>
               <Thermometer size={18} color={colors.textSecondary} strokeWidth={1.8} />
-              <Text style={styles.rowLabel}>Temperature</Text>
+              <AppText style={styles.rowLabel}>Temperature</AppText>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.rowValue}>{temperatureUnit === 'c' ? '°C' : '°F'}</Text>
+              <AppText style={styles.rowValue}>{temperatureUnit === 'c' ? '°C' : '°F'}</AppText>
               <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
             </View>
           </TouchableOpacity>
@@ -114,10 +116,10 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
           <TouchableOpacity style={styles.row} onPress={toggleWindSpeedUnit} activeOpacity={0.8}>
             <View style={styles.rowLeft}>
               <Wind size={18} color={colors.textSecondary} strokeWidth={1.8} />
-              <Text style={styles.rowLabel}>Wind Speed</Text>
+              <AppText style={styles.rowLabel}>Wind Speed</AppText>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.rowValue}>{windSpeedUnit === 'mph' ? 'mph' : 'km/h'}</Text>
+              <AppText style={styles.rowValue}>{windSpeedUnit === 'mph' ? 'mph' : 'km/h'}</AppText>
               <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
             </View>
           </TouchableOpacity>
@@ -125,7 +127,7 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Appearance</Text>
+        <AppText style={[styles.sectionTitle, { color: heroMuted }]}>Appearance</AppText>
         <View style={[styles.appearanceCard, shadows.card]}>
           {options.map((option) => (
             <TouchableOpacity
@@ -137,25 +139,25 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
               <View style={[mode === option.id && styles.swatchSelected]}>
                 {option.preview}
               </View>
-              <Text
+              <AppText
                 style={[
                   styles.appearanceLabel,
                   mode === option.id && styles.appearanceLabelActive,
                 ]}
               >
                 {option.label}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: heroMuted }]}>About</Text>
+        <AppText style={[styles.sectionTitle, { color: heroMuted }]}>About</AppText>
         <View style={[styles.group, shadows.card]}>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Version</Text>
-            <Text style={styles.rowValue}>1.0.0</Text>
+            <AppText style={styles.rowLabel}>Version</AppText>
+            <AppText style={styles.rowValue}>1.0.0</AppText>
           </View>
           {isLoggedIn ? (
             <>
@@ -165,7 +167,7 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
                 activeOpacity={0.8}
                 onPress={() => void logout()}
               >
-                <Text style={[styles.rowLabel, styles.signOut]}>Sign Out</Text>
+                <AppText style={[styles.rowLabel, styles.signOut]}>Sign Out</AppText>
               </TouchableOpacity>
             </>
           ) : null}

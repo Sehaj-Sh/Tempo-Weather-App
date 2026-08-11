@@ -1,3 +1,19 @@
+import React from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  Droplets,
+  LocateFixed,
+  Sun,
+  Thermometer,
+  Wind,
+} from "lucide-react-native";
+import { AppText } from "@/components/AppText";
 import MetricCard from "@/components/MetricCard";
 import { colors, radii, shadows, spacing, type } from "@/constants/theme";
 import { useAppearance } from "@/context/AppearanceContext";
@@ -10,21 +26,7 @@ import {
   getWeatherIcon,
   getWeatherLabel,
 } from "@/utils/weatherCodes";
-import {
-  Droplets,
-  LocateFixed,
-  Sun,
-  Thermometer,
-  Wind,
-} from "lucide-react-native";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+
 
 export default function CurrentScreen() {
   const { heroText, heroMuted, accent } = useAppearance();
@@ -42,12 +44,12 @@ export default function CurrentScreen() {
     return (
       <View style={styles.statusBlock}>
         {isLoading ? <ActivityIndicator color={colors.link} /> : null}
-        <Text style={[styles.statusText, { color: heroMuted }]}>
+        <AppText style={[styles.statusText, { color: heroMuted }]}>
           {error ||
             (isLoading
               ? "Getting your local weather…"
               : "No weather data yet.")}
-        </Text>
+        </AppText>
       </View>
     );
   }
@@ -64,28 +66,28 @@ export default function CurrentScreen() {
     >
       {/* Current Location Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: heroMuted }]}>
+        <AppText style={[styles.sectionLabel, { color: heroMuted }]}>
           CURRENT LOCATION
-        </Text>
+        </AppText>
         <View style={[styles.mainCard, shadows.card]}>
           <View style={styles.mainCardContent}>
-            <Text style={styles.cityName}>{place.label}</Text>
+            <AppText style={styles.cityName}>{place.label}</AppText>
             <View style={styles.conditionRow}>
               <ConditionIcon
                 size={16}
                 color={colors.textSecondary}
                 strokeWidth={1.7}
               />
-              <Text style={styles.conditionText}>
+              <AppText style={styles.conditionText}>
                 {getWeatherLabel(current.weatherCode)} · H:{" "}
                 {formatTemp(current.high, temperatureUnit)} L:{" "}
                 {formatTemp(current.low, temperatureUnit)}
-              </Text>
+              </AppText>
             </View>
           </View>
-          <Text style={styles.mainTemp}>
+          <AppText style={styles.mainTemp}>
             {formatTemp(current.temperature, temperatureUnit)}
-          </Text>
+          </AppText>
         </View>
 
         {canReturnHome ? (
@@ -95,16 +97,16 @@ export default function CurrentScreen() {
             onPress={() => void returnToDeviceLocation()}
           >
             <LocateFixed size={14} color={accent} strokeWidth={2} />
-            <Text style={[styles.myLocationText, { color: accent }]}>
+            <AppText style={[styles.myLocationText, { color: accent }]}>
               Back to my location
-            </Text>
+            </AppText>
           </TouchableOpacity>
         ) : null}
       </View>
 
       {/* Hourly Forecast Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: heroMuted }]}>HOURLY</Text>
+        <AppText style={[styles.sectionLabel, { color: heroMuted }]}>HOURLY</AppText>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -117,13 +119,13 @@ export default function CurrentScreen() {
                 key={`${item.time}-${index}`}
                 style={[styles.hourlyCard, shadows.card]}
               >
-                <Text style={styles.hourlyTime}>
+                <AppText style={styles.hourlyTime}>
                   {formatHourLabel(item.time, index)}
-                </Text>
+                </AppText>
                 <Icon size={22} color={colors.accentDeep} strokeWidth={1.7} />
-                <Text style={styles.hourlyTemp}>
+                <AppText style={styles.hourlyTemp}>
                   {formatTemp(item.temperature, temperatureUnit)}
-                </Text>
+                </AppText>
               </View>
             );
           })}
@@ -132,9 +134,9 @@ export default function CurrentScreen() {
 
       {/* Detailed Metrics Section */}
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: heroMuted }]}>
+        <AppText style={[styles.sectionLabel, { color: heroMuted }]}>
           WEATHER DETAILS
-        </Text>
+        </AppText>
         <View style={styles.gridContainer}>
           <MetricCard
             icon={
