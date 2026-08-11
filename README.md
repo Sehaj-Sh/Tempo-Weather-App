@@ -23,15 +23,15 @@ It shows live weather for your current location, lets you search and save cities
 
 ## Tech Stack
 
-| Area        | Technology                                          |
-| ----------- | --------------------------------------------------- | ---------------------------- |
-| Framework   | Expo SDK 57 + React Native                          |
-| Language    | TypeScript                                          |
-| Navigation  | Expo Router + custom bottom tabs                    |
-| Storage     | AsyncStorage                                        |
-| Location    | `expo-location`                                     |
-| Weather API | [Open-Meteo](🌤️ Free Open-Source Weather API        | Open-Meteo.com) (no API key) |
-| Geocoding   | Open-Meteo Geocoding API + device reverse geocoding |
+| Area | Technology |
+| ---- | ---------- |
+| Framework | Expo SDK 57 + React Native |
+| Language | TypeScript |
+| Navigation | Expo Router + custom bottom tabs |
+| Storage | AsyncStorage |
+| Location | `expo-location` |
+| Weather API | [Open-Meteo](https://open-meteo.com/) (no API key) |
+| Geocoding | Open-Meteo Geocoding API + device reverse geocoding |
 
 ---
 
