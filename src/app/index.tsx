@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '@/components/Header';
@@ -10,11 +10,17 @@ import SearchScreen from '@/screens/SearchScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
 import AuthScreen from '@/screens/AuthScreen';
 import { useAppearance } from '@/context/AppearanceContext';
-import { spacing } from '@/constants/theme';
+import { useWeather } from '@/context/WeatherContext';
+import { colors, spacing, type } from '@/constants/theme';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState('current');
-  const { gradientColors, isDark, isReady } = useAppearance();
+  const { gradientColors, isDark, isReady, heroMuted } = useAppearance();
+  const { isReady: weatherReady, isLoading, activeWeather, error } = useWeather();
+
+  const showCenteredLoader =
+    (activeTab === 'current' || activeTab === 'forecast') &&
+    (!weatherReady || (isLoading && !activeWeather));
 
   if (!isReady) {
     return <View style={styles.root} />;
@@ -36,18 +42,31 @@ export default function Index() {
           style={styles.scrollContent}
           contentContainerStyle={[
             styles.scrollInner,
-            activeTab === 'auth' && styles.scrollInnerCentered,
+            (activeTab === 'auth' || showCenteredLoader) && styles.scrollInnerCentered,
           ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {activeTab === 'current' && <CurrentScreen />}
-          {activeTab === 'forecast' && <ForecastScreen />}
-          {activeTab === 'search' && <SearchScreen />}
-          {activeTab === 'settings' && (
-            <SettingsScreen onLoginPress={() => setActiveTab('auth')} />
+          {showCenteredLoader ? (
+            <View style={styles.loaderBlock}>
+              <ActivityIndicator size="large" color={colors.link} />
+              <Text style={[styles.loaderText, { color: heroMuted }]}>
+                {error || 'Getting your local weather…'}
+              </Text>
+            </View>
+          ) : (
+            <>
+              {activeTab === 'current' && <CurrentScreen />}
+              {activeTab === 'forecast' && <ForecastScreen />}
+              {activeTab === 'search' && (
+                <SearchScreen onCitySelected={() => setActiveTab('current')} />
+              )}
+              {activeTab === 'settings' && (
+                <SettingsScreen onLoginPress={() => setActiveTab('auth')} />
+              )}
+              {activeTab === 'auth' && <AuthScreen onLogin={() => setActiveTab('current')} />}
+            </>
           )}
-          {activeTab === 'auth' && <AuthScreen onLogin={() => setActiveTab('current')} />}
         </ScrollView>
 
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -75,5 +94,15 @@ const styles = StyleSheet.create({
   scrollInnerCentered: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  loaderBlock: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.xxl,
+  },
+  loaderText: {
+    ...type.bodyMedium,
+    textAlign: 'center',
   },
 });
