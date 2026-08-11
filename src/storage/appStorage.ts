@@ -3,6 +3,7 @@ import {
   AppearanceMode,
   DEFAULT_CUSTOM_COLOR,
 } from '@/constants/appearance';
+import type { LocationWeather, PlaceResult } from '@/services/weatherApi';
 import { STORAGE_KEYS } from '@/storage/keys';
 
 export type AppearanceSettings = {
@@ -26,6 +27,17 @@ export type SavedCity = {
   region?: string;
   country?: string;
 };
+
+export type WeatherCache = {
+  updatedAt: number;
+  devicePlace: PlaceResult | null;
+  deviceWeather: LocationWeather | null;
+  activeWeather: LocationWeather | null;
+  savedWeatherById: Record<string, LocationWeather>;
+};
+
+/** Reuse cached weather for this long before refetching. */
+export const WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
   mode: 'light',
@@ -57,6 +69,24 @@ async function writeJson<T>(key: string, value: T): Promise<void> {
 
 function isAppearanceMode(value: unknown): value is AppearanceMode {
   return value === 'light' || value === 'dark' || value === 'custom';
+}
+
+function isPlace(value: unknown): value is PlaceResult {
+  if (!value || typeof value !== 'object') return false;
+  const place = value as PlaceResult;
+  return (
+    typeof place.id === 'string' &&
+    typeof place.name === 'string' &&
+    typeof place.latitude === 'number' &&
+    typeof place.longitude === 'number' &&
+    typeof place.label === 'string'
+  );
+}
+
+function isLocationWeather(value: unknown): value is LocationWeather {
+  if (!value || typeof value !== 'object') return false;
+  const weather = value as LocationWeather;
+  return isPlace(weather.place) && !!weather.current && Array.isArray(weather.daily);
 }
 
 export async function loadAppearanceSettings(): Promise<AppearanceSettings> {
@@ -106,4 +136,33 @@ export async function loadSavedCities(): Promise<SavedCity[]> {
 
 export async function saveSavedCities(cities: SavedCity[]): Promise<void> {
   await writeJson(STORAGE_KEYS.savedCities, cities);
+}
+
+export async function loadWeatherCache(): Promise<WeatherCache | null> {
+  const stored = await readJson<WeatherCache>(STORAGE_KEYS.weatherCache);
+  if (!stored || typeof stored.updatedAt !== 'number') return null;
+
+  const savedWeatherById: Record<string, LocationWeather> = {};
+  if (stored.savedWeatherById && typeof stored.savedWeatherById === 'object') {
+    for (const [id, weather] of Object.entries(stored.savedWeatherById)) {
+      if (isLocationWeather(weather)) savedWeatherById[id] = weather;
+    }
+  }
+
+  return {
+    updatedAt: stored.updatedAt,
+    devicePlace: isPlace(stored.devicePlace) ? stored.devicePlace : null,
+    deviceWeather: isLocationWeather(stored.deviceWeather) ? stored.deviceWeather : null,
+    activeWeather: isLocationWeather(stored.activeWeather) ? stored.activeWeather : null,
+    savedWeatherById,
+  };
+}
+
+export async function saveWeatherCache(cache: WeatherCache): Promise<void> {
+  await writeJson(STORAGE_KEYS.weatherCache, cache);
+}
+
+export function isWeatherCacheFresh(cache: WeatherCache | null): boolean {
+  if (!cache) return false;
+  return Date.now() - cache.updatedAt < WEATHER_CACHE_TTL_MS;
 }

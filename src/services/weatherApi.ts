@@ -137,37 +137,51 @@ export async function fetchWeatherForPlace(place: PlaceResult): Promise<Location
     throw new Error('Weather data was incomplete.');
   }
 
+  const current = data.current;
+  const hourlyData = data.hourly;
+  const dailyData = data.daily;
+
   const now = Date.now();
-  let hourIndex = data.hourly.time.findIndex((t) => new Date(t).getTime() >= now);
+  let hourIndex = hourlyData.time.findIndex((t) => new Date(t).getTime() >= now);
   if (hourIndex < 0) hourIndex = 0;
 
-  const hourly: HourlyForecastItem[] = data.hourly.time
+  const hourly: HourlyForecastItem[] = hourlyData.time
     .slice(hourIndex, hourIndex + 12)
     .map((time, offset) => ({
       time,
-      temperature: Math.round(data.hourly!.temperature_2m[hourIndex + offset]),
-      weatherCode: data.hourly!.weather_code[hourIndex + offset],
+      temperature: Math.round(hourlyData.temperature_2m[hourIndex + offset]),
+      weatherCode: hourlyData.weather_code[hourIndex + offset],
     }));
 
-  const daily: DailyForecastItem[] = data.daily.time.map((date, index) => ({
+  // Keep "Now" aligned with the live current reading.
+  if (hourly.length > 0) {
+    hourly[0] = {
+      ...hourly[0],
+      temperature: Math.round(current.temperature_2m),
+      weatherCode: current.weather_code,
+    };
+  }
+
+  const daily: DailyForecastItem[] = dailyData.time.map((date, index) => ({
     date,
-    high: Math.round(data.daily!.temperature_2m_max[index]),
-    low: Math.round(data.daily!.temperature_2m_min[index]),
-    weatherCode: data.daily!.weather_code[index],
+    high: Math.round(dailyData.temperature_2m_max[index]),
+    low: Math.round(dailyData.temperature_2m_min[index]),
+    // Today's card should match the current condition, not the day summary code.
+    weatherCode: index === 0 ? current.weather_code : dailyData.weather_code[index],
   }));
 
   return {
     place,
     current: {
-      temperature: Math.round(data.current.temperature_2m),
-      feelsLike: Math.round(data.current.apparent_temperature),
-      humidity: Math.round(data.current.relative_humidity_2m),
-      windSpeed: Math.round(data.current.wind_speed_10m),
-      weatherCode: data.current.weather_code,
-      uvIndex: data.hourly.uv_index[hourIndex] ?? 0,
-      high: daily[0]?.high ?? Math.round(data.current.temperature_2m),
-      low: daily[0]?.low ?? Math.round(data.current.temperature_2m),
-      time: data.current.time,
+      temperature: Math.round(current.temperature_2m),
+      feelsLike: Math.round(current.apparent_temperature),
+      humidity: Math.round(current.relative_humidity_2m),
+      windSpeed: Math.round(current.wind_speed_10m),
+      weatherCode: current.weather_code,
+      uvIndex: hourlyData.uv_index[hourIndex] ?? 0,
+      high: daily[0]?.high ?? Math.round(current.temperature_2m),
+      low: daily[0]?.low ?? Math.round(current.temperature_2m),
+      time: current.time,
     },
     hourly,
     daily,

@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { getDevicePlace } from '@/services/location';
@@ -14,9 +15,14 @@ import {
   searchPlaces,
 } from '@/services/weatherApi';
 import {
+  isWeatherCacheFresh,
   loadSavedCities,
+  loadWeatherCache,
   saveSavedCities,
+  saveWeatherCache,
   SavedCity,
+  WEATHER_CACHE_TTL_MS,
+  WeatherCache,
 } from '@/storage/appStorage';
 
 type WeatherContextValue = {
@@ -99,20 +105,63 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
   const [activeWeather, setActiveWeather] = useState<LocationWeather | null>(null);
   const [savedCities, setSavedCities] = useState<SavedCity[]>([]);
   const [savedWeatherById, setSavedWeatherById] = useState<Record<string, LocationWeather>>({});
+  const persistEnabled = useRef(false);
+  const cacheUpdatedAt = useRef(0);
 
-  const hydrate = useCallback(async () => {
-    setIsLoading(true);
+  const persistCache = useCallback(
+    async (next: {
+      devicePlace: PlaceResult | null;
+      deviceWeather: LocationWeather | null;
+      activeWeather: LocationWeather | null;
+      savedWeatherById: Record<string, LocationWeather>;
+    }) => {
+      const updatedAt = Date.now();
+      cacheUpdatedAt.current = updatedAt;
+      const cache: WeatherCache = {
+        updatedAt,
+        devicePlace: next.devicePlace,
+        deviceWeather: next.deviceWeather,
+        activeWeather: next.activeWeather,
+        savedWeatherById: next.savedWeatherById,
+      };
+      await saveWeatherCache(cache);
+    },
+    []
+  );
+
+  const hydrate = useCallback(async (forceNetwork = false) => {
     setError(null);
 
     try {
-      const cities = await loadSavedCities();
+      const [cities, cache] = await Promise.all([loadSavedCities(), loadWeatherCache()]);
       setSavedCities(cities);
+
+      const hasFreshCache = !forceNetwork && isWeatherCacheFresh(cache) && !!cache?.activeWeather;
+
+      if (cache?.activeWeather) {
+        cacheUpdatedAt.current = cache.updatedAt;
+        setDevicePlace(cache.devicePlace);
+        setDeviceWeather(cache.deviceWeather);
+        setActiveWeather(cache.activeWeather);
+        setSavedWeatherById(cache.savedWeatherById);
+        setIsReady(true);
+        setIsLoading(false);
+        persistEnabled.current = true;
+
+        if (hasFreshCache) {
+          return;
+        }
+      } else {
+        setIsLoading(true);
+      }
 
       const device = await getDevicePlace();
       let nextPlace: PlaceResult | null = null;
+      let nextDevicePlace: PlaceResult | null = null;
 
       if (device.ok) {
         nextPlace = device.place;
+        nextDevicePlace = device.place;
         setDevicePlace(device.place);
       } else {
         setDevicePlace(null);
@@ -120,12 +169,17 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
         setError(device.message);
         if (cities[0]) {
           nextPlace = toPlace(cities[0]);
+        } else if (cache?.activeWeather) {
+          // Keep showing cached weather if GPS fails.
+          return;
         }
       }
 
       if (!nextPlace) {
-        setActiveWeather(null);
-        setSavedWeatherById({});
+        if (!cache?.activeWeather) {
+          setActiveWeather(null);
+          setSavedWeatherById({});
+        }
         return;
       }
 
@@ -134,29 +188,55 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
         loadWeatherMap(cities),
       ]);
 
+      const nextDeviceWeather = device.ok ? weather : null;
       if (device.ok) {
         setDeviceWeather(weather);
+        setError(null);
       }
 
       setActiveWeather(weather);
       setSavedWeatherById(weatherMap);
-      if (device.ok) setError(null);
+
+      await persistCache({
+        devicePlace: nextDevicePlace,
+        deviceWeather: nextDeviceWeather,
+        activeWeather: weather,
+        savedWeatherById: weatherMap,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load weather.');
     } finally {
       setIsLoading(false);
       setIsReady(true);
+      persistEnabled.current = true;
     }
-  }, []);
+  }, [persistCache]);
 
   useEffect(() => {
-    void hydrate();
+    void hydrate(false);
   }, [hydrate]);
 
   useEffect(() => {
     if (!isReady) return;
     void saveSavedCities(savedCities);
   }, [savedCities, isReady]);
+
+  useEffect(() => {
+    if (!persistEnabled.current || !isReady) return;
+    void persistCache({
+      devicePlace,
+      deviceWeather,
+      activeWeather,
+      savedWeatherById,
+    });
+  }, [
+    devicePlace,
+    deviceWeather,
+    activeWeather,
+    savedWeatherById,
+    isReady,
+    persistCache,
+  ]);
 
   const selectPlace = useCallback(async (place: PlaceResult) => {
     setIsLoading(true);
@@ -173,13 +253,30 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
 
   const selectSavedCity = useCallback(
     async (city: SavedCity) => {
+      const cached = savedWeatherById[city.id];
+      if (cached) {
+        setActiveWeather(cached);
+        return;
+      }
       await selectPlace(toPlace(city));
     },
-    [selectPlace]
+    [savedWeatherById, selectPlace]
   );
 
   const useDeviceLocation = useCallback(async () => {
-    setIsLoading(true);
+    const cacheIsFresh = Date.now() - cacheUpdatedAt.current < WEATHER_CACHE_TTL_MS;
+
+    if (deviceWeather && cacheIsFresh) {
+      setActiveWeather(deviceWeather);
+      setError(null);
+      return;
+    }
+
+    if (deviceWeather) {
+      setActiveWeather(deviceWeather);
+    }
+
+    setIsLoading(!deviceWeather);
     setError(null);
     try {
       const device = await getDevicePlace();
@@ -196,7 +293,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [deviceWeather]);
 
   const returnToDeviceLocation = useCallback(async () => {
     if (deviceWeather) {
@@ -256,7 +353,7 @@ export function WeatherProvider({ children }: { children: React.ReactNode }) {
       addSavedCity,
       removeSavedCity,
       searchCitySuggestions,
-      refresh: hydrate,
+      refresh: () => hydrate(true),
     }),
     [
       isReady,
