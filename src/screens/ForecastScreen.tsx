@@ -1,52 +1,90 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Sun, CloudRain, Cloud } from 'lucide-react-native';
+import {
+  ActivityIndicator,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
+import { LocateFixed } from 'lucide-react-native';
 import { useAppearance } from '@/context/AppearanceContext';
+import { useWeather } from '@/context/WeatherContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
-
-const forecastDays = [
-  { day: 'Monday', high: 28, low: 12, cond: 'Sunny', Icon: Sun, today: true },
-  { day: 'Tuesday', high: 15, low: 2, cond: 'Showers', Icon: CloudRain, today: false },
-  { day: 'Wednesday', high: 20, low: 9, cond: 'Clear', Icon: Sun, today: false },
-  { day: 'Thursday', high: 22, low: 11, cond: 'Clear', Icon: Sun, today: false },
-  { day: 'Friday', high: 18, low: 8, cond: 'Cloudy', Icon: Cloud, today: false },
-  { day: 'Saturday', high: 24, low: 10, cond: 'Clear', Icon: Sun, today: false },
-  { day: 'Sunday', high: 26, low: 12, cond: 'Clear', Icon: Sun, today: false },
-];
+import { formatDayLabel, getWeatherIcon, getWeatherLabel } from '@/utils/weatherCodes';
 
 export default function ForecastScreen() {
   const { heroText, heroMuted } = useAppearance();
+  const {
+    activeWeather,
+    isLoading,
+    error,
+    isViewingDeviceLocation,
+    devicePlace,
+    returnToDeviceLocation,
+  } = useWeather();
+
+  if (!activeWeather) {
+    return (
+      <View style={styles.statusBlock}>
+        {isLoading ? <ActivityIndicator color={colors.link} /> : null}
+        <Text style={[styles.statusText, { color: heroMuted }]}>
+          {error || (isLoading ? 'Loading forecast…' : 'No forecast data yet.')}
+        </Text>
+      </View>
+    );
+  }
+
+  const canReturnHome = !isViewingDeviceLocation && !!devicePlace;
 
   return (
     <View style={styles.container}>
       <View style={styles.titleBlock}>
         <Text style={[styles.subtitle, { color: heroMuted }]}>Local weather</Text>
-        <Text style={[styles.title, { color: heroText }]}>Calgary, AB</Text>
+        <Text style={[styles.title, { color: heroText }]}>{activeWeather.place.label}</Text>
+        {canReturnHome ? (
+          <TouchableOpacity
+            style={styles.myLocationButton}
+            activeOpacity={0.85}
+            onPress={() => void returnToDeviceLocation()}
+          >
+            <LocateFixed size={14} color={colors.link} strokeWidth={2} />
+            <Text style={styles.myLocationText}>Back to my location</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View style={styles.list}>
-        {forecastDays.map((item) => (
-          <View key={item.day} style={[styles.card, shadows.card, item.today && styles.todayCard]}>
-            <View style={styles.dayCol}>
-              {item.today ? (
-                <View style={styles.todayBadge}>
-                  <Text style={styles.todayText}>Today</Text>
-                </View>
-              ) : null}
-              <Text style={[styles.dayText, item.today && styles.dayTextToday]}>{item.day}</Text>
-            </View>
+        {activeWeather.daily.map((item, index) => {
+          const Icon = getWeatherIcon(item.weatherCode);
+          const isToday = index === 0;
+          return (
+            <View
+              key={item.date}
+              style={[styles.card, shadows.card, isToday && styles.todayCard]}
+            >
+              <View style={styles.dayCol}>
+                {isToday ? (
+                  <View style={styles.todayBadge}>
+                    <Text style={styles.todayText}>Today</Text>
+                  </View>
+                ) : null}
+                <Text style={[styles.dayText, isToday && styles.dayTextToday]}>
+                  {formatDayLabel(item.date, index)}
+                </Text>
+              </View>
 
-            <View style={styles.condCol}>
-              <item.Icon size={20} color={colors.accentDeep} strokeWidth={1.7} />
-              <Text style={styles.condText}>{item.cond}</Text>
-            </View>
+              <View style={styles.condCol}>
+                <Icon size={20} color={colors.accentDeep} strokeWidth={1.7} />
+                <Text style={styles.condText}>{getWeatherLabel(item.weatherCode)}</Text>
+              </View>
 
-            <View style={styles.tempCol}>
-              <Text style={styles.highText}>{item.high}°</Text>
-              <Text style={styles.lowText}>{item.low}°</Text>
+              <View style={styles.tempCol}>
+                <Text style={styles.highText}>{item.high}°</Text>
+                <Text style={styles.lowText}>{item.low}°</Text>
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );
@@ -56,6 +94,17 @@ const styles = StyleSheet.create({
   container: {
     gap: spacing.xl,
     paddingBottom: spacing.lg,
+  },
+  statusBlock: {
+    flexGrow: 1,
+    minHeight: 360,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  statusText: {
+    ...type.bodyMedium,
+    textAlign: 'center',
   },
   titleBlock: {
     alignItems: 'center',
@@ -67,6 +116,24 @@ const styles = StyleSheet.create({
   },
   title: {
     ...type.title,
+    textAlign: 'center',
+  },
+  myLocationButton: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.pill,
+    backgroundColor: colors.cardWhite,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
+  },
+  myLocationText: {
+    ...type.caption,
+    color: colors.link,
+    fontWeight: '600',
   },
   list: {
     gap: spacing.md,

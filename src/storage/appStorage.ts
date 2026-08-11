@@ -21,7 +21,10 @@ export type UserPreferences = {
 export type SavedCity = {
   id: string;
   name: string;
+  latitude: number;
+  longitude: number;
   region?: string;
+  country?: string;
 };
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
@@ -89,7 +92,16 @@ export async function saveUserPreferences(preferences: UserPreferences): Promise
 
 export async function loadSavedCities(): Promise<SavedCity[]> {
   const stored = await readJson<SavedCity[]>(STORAGE_KEYS.savedCities);
-  return Array.isArray(stored) ? stored : [];
+  if (!Array.isArray(stored)) return [];
+
+  return stored.filter(
+    (city): city is SavedCity =>
+      !!city &&
+      typeof city.id === 'string' &&
+      typeof city.name === 'string' &&
+      typeof city.latitude === 'number' &&
+      typeof city.longitude === 'number'
+  );
 }
 
 export async function saveSavedCities(cities: SavedCity[]): Promise<void> {
