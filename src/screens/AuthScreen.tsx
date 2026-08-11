@@ -69,6 +69,7 @@ export default function AuthScreen({ onLogin, initialMode = 'login' }: AuthScree
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}
+            underlineColorAndroid="transparent"
           />
         </View>
 
@@ -81,6 +82,7 @@ export default function AuthScreen({ onLogin, initialMode = 'login' }: AuthScree
             onChangeText={setPassword}
             secureTextEntry
             style={styles.input}
+            underlineColorAndroid="transparent"
           />
         </View>
 
@@ -94,6 +96,7 @@ export default function AuthScreen({ onLogin, initialMode = 'login' }: AuthScree
               onChangeText={setConfirmPassword}
               secureTextEntry
               style={styles.input}
+              underlineColorAndroid="transparent"
             />
           </View>
         )}
@@ -186,6 +189,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
+    outlineWidth: 0,
+    outlineStyle: 'solid',
+    outlineColor: 'transparent',
   },
   primaryButton: {
     marginTop: spacing.xs,
