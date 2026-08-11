@@ -10,6 +10,7 @@ import {
 import { Thermometer, Droplets, Sun, Wind, LocateFixed } from 'lucide-react-native';
 import MetricCard from '@/components/MetricCard';
 import { useAppearance } from '@/context/AppearanceContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { useWeather } from '@/context/WeatherContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 import {
@@ -18,9 +19,15 @@ import {
   getWeatherIcon,
   getWeatherLabel,
 } from '@/utils/weatherCodes';
+import {
+  convertWindSpeed,
+  formatTemp,
+  windSpeedLabel,
+} from '@/utils/units';
 
 export default function CurrentScreen() {
-  const { heroText, heroMuted } = useAppearance();
+  const { heroText, heroMuted, accent } = useAppearance();
+  const { temperatureUnit, windSpeedUnit } = usePreferences();
   const {
     activeWeather,
     isLoading,
@@ -50,7 +57,9 @@ export default function CurrentScreen() {
     <View style={styles.container}>
       <View style={styles.heroSection}>
         <Text style={[styles.cityText, { color: heroMuted }]}>{place.label}</Text>
-        <Text style={[styles.tempText, { color: heroText }]}>{current.temperature}°</Text>
+        <Text style={[styles.tempText, { color: heroText }]}>
+          {formatTemp(current.temperature, temperatureUnit)}
+        </Text>
         <View style={styles.conditionRow}>
           <ConditionIcon size={20} color={heroText} strokeWidth={1.7} />
           <Text style={[styles.conditionText, { color: heroText }]}>
@@ -59,11 +68,17 @@ export default function CurrentScreen() {
         </View>
         <View style={styles.highLowRow}>
           <Text style={[styles.highLowText, { color: heroMuted }]}>
-            H <Text style={[styles.highLowValue, { color: heroText }]}>{current.high}°</Text>
+            H{' '}
+            <Text style={[styles.highLowValue, { color: heroText }]}>
+              {formatTemp(current.high, temperatureUnit)}
+            </Text>
           </Text>
           <View style={[styles.dot, { backgroundColor: heroMuted }]} />
           <Text style={[styles.highLowText, { color: heroMuted }]}>
-            L <Text style={[styles.highLowValue, { color: heroText }]}>{current.low}°</Text>
+            L{' '}
+            <Text style={[styles.highLowValue, { color: heroText }]}>
+              {formatTemp(current.low, temperatureUnit)}
+            </Text>
           </Text>
         </View>
 
@@ -73,8 +88,8 @@ export default function CurrentScreen() {
             activeOpacity={0.85}
             onPress={() => void returnToDeviceLocation()}
           >
-            <LocateFixed size={14} color={colors.link} strokeWidth={2} />
-            <Text style={styles.myLocationText}>Back to my location</Text>
+            <LocateFixed size={14} color={accent} strokeWidth={2} />
+            <Text style={[styles.myLocationText, { color: accent }]}>Back to my location</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -83,7 +98,7 @@ export default function CurrentScreen() {
         <MetricCard
           icon={<Thermometer size={13} color={colors.textSecondary} strokeWidth={2} />}
           title="Feels Like"
-          value={`${current.feelsLike}°`}
+          value={formatTemp(current.feelsLike, temperatureUnit)}
         />
         <MetricCard
           icon={<Droplets size={13} color={colors.textSecondary} strokeWidth={2} />}
@@ -101,8 +116,8 @@ export default function CurrentScreen() {
         <MetricCard
           icon={<Wind size={13} color={colors.textSecondary} strokeWidth={2} />}
           title="Wind Speed"
-          value={`${current.windSpeed}`}
-          unit="mph"
+          value={`${convertWindSpeed(current.windSpeed, windSpeedUnit)}`}
+          unit={windSpeedLabel(windSpeedUnit)}
         />
       </View>
 
@@ -118,7 +133,9 @@ export default function CurrentScreen() {
             <View key={`${item.time}-${index}`} style={[styles.hourlyCard, shadows.card]}>
               <Text style={styles.hourlyTime}>{formatHourLabel(item.time, index)}</Text>
               <Icon size={22} color={colors.accentDeep} strokeWidth={1.7} />
-              <Text style={styles.hourlyTemp}>{item.temperature}°</Text>
+              <Text style={styles.hourlyTemp}>
+                {formatTemp(item.temperature, temperatureUnit)}
+              </Text>
             </View>
           );
         })}
@@ -192,7 +209,6 @@ const styles = StyleSheet.create({
   },
   myLocationText: {
     ...type.caption,
-    color: colors.link,
     fontWeight: '600',
   },
   dot: {

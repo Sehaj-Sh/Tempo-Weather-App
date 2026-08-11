@@ -5,13 +5,13 @@ import {
   Pencil,
   Thermometer,
   Wind,
-  TriangleAlert,
-  Clock,
   ChevronRight,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ColorPaletteModal from '@/components/ColorPaletteModal';
 import { useAppearance } from '@/context/AppearanceContext';
+import { useAuth } from '@/context/AuthContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { AppearanceMode } from '@/constants/appearance';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
@@ -21,6 +21,13 @@ interface SettingsScreenProps {
 
 export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
   const { mode, customColor, setMode, setCustomColor, heroMuted } = useAppearance();
+  const { user, isLoggedIn, logout } = useAuth();
+  const {
+    temperatureUnit,
+    windSpeedUnit,
+    toggleTemperatureUnit,
+    toggleWindSpeedUnit,
+  } = usePreferences();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const options: { id: AppearanceMode; label: string; preview: React.ReactNode }[] = [
@@ -74,64 +81,46 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.profileCard, shadows.soft]}
-        onPress={onLoginPress}
-        activeOpacity={0.8}
+        onPress={isLoggedIn ? undefined : onLoginPress}
+        activeOpacity={isLoggedIn ? 1 : 0.8}
+        disabled={isLoggedIn}
       >
         <View style={styles.avatar}>
           <User size={20} color={colors.textSecondary} strokeWidth={1.8} />
         </View>
         <View style={styles.profileCopy}>
-          <Text style={styles.profileText}>Log in</Text>
-          <Text style={styles.profileHint}>Sync favorites across devices</Text>
+          <Text style={styles.profileText}>{isLoggedIn ? user?.name : 'Log in'}</Text>
+          <Text style={styles.profileHint}>
+            {isLoggedIn ? user?.email : 'Save your account on this device'}
+          </Text>
         </View>
-        <Pencil size={16} color={colors.textMuted} strokeWidth={1.8} />
+        {!isLoggedIn ? <Pencil size={16} color={colors.textMuted} strokeWidth={1.8} /> : null}
       </TouchableOpacity>
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: heroMuted }]}>Units</Text>
         <View style={[styles.group, shadows.card]}>
-          <View style={styles.row}>
+          <TouchableOpacity style={styles.row} onPress={toggleTemperatureUnit} activeOpacity={0.8}>
             <View style={styles.rowLeft}>
               <Thermometer size={18} color={colors.textSecondary} strokeWidth={1.8} />
               <Text style={styles.rowLabel}>Temperature</Text>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.rowValue}>°C</Text>
+              <Text style={styles.rowValue}>{temperatureUnit === 'c' ? '°C' : '°F'}</Text>
               <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={styles.divider} />
-          <View style={styles.row}>
+          <TouchableOpacity style={styles.row} onPress={toggleWindSpeedUnit} activeOpacity={0.8}>
             <View style={styles.rowLeft}>
               <Wind size={18} color={colors.textSecondary} strokeWidth={1.8} />
               <Text style={styles.rowLabel}>Wind Speed</Text>
             </View>
             <View style={styles.rowRight}>
-              <Text style={styles.rowValue}>mph</Text>
+              <Text style={styles.rowValue}>{windSpeedUnit === 'mph' ? 'mph' : 'km/h'}</Text>
               <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
             </View>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: heroMuted }]}>Notifications</Text>
-        <View style={[styles.group, shadows.card]}>
-          <View style={styles.row}>
-            <View style={styles.rowLeft}>
-              <TriangleAlert size={18} color={colors.textSecondary} strokeWidth={1.8} />
-              <Text style={styles.rowLabel}>Severe Weather Alerts</Text>
-            </View>
-            <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.row}>
-            <View style={styles.rowLeft}>
-              <Clock size={18} color={colors.textSecondary} strokeWidth={1.8} />
-              <Text style={styles.rowLabel}>Daily Summary</Text>
-            </View>
-            <ChevronRight size={16} color={colors.textSoft} strokeWidth={1.8} />
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -168,10 +157,18 @@ export default function SettingsScreen({ onLoginPress }: SettingsScreenProps) {
             <Text style={styles.rowLabel}>Version</Text>
             <Text style={styles.rowValue}>1.0.0</Text>
           </View>
-          <View style={styles.divider} />
-          <TouchableOpacity style={styles.row} activeOpacity={0.8}>
-            <Text style={[styles.rowLabel, styles.signOut]}>Sign Out</Text>
-          </TouchableOpacity>
+          {isLoggedIn ? (
+            <>
+              <View style={styles.dividerFlush} />
+              <TouchableOpacity
+                style={styles.row}
+                activeOpacity={0.8}
+                onPress={() => void logout()}
+              >
+                <Text style={[styles.rowLabel, styles.signOut]}>Sign Out</Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
         </View>
       </View>
 
@@ -275,6 +272,11 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.border,
     marginLeft: spacing.lg + 18 + spacing.md,
+  },
+  dividerFlush: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+    marginLeft: spacing.lg,
   },
   appearanceCard: {
     backgroundColor: colors.cardWhite,

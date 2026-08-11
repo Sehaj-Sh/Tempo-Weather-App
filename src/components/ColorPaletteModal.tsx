@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { customColorOptions } from '@/constants/appearance';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, spacing, type } from '@/constants/theme';
 
 interface ColorPaletteModalProps {
@@ -24,6 +25,7 @@ export default function ColorPaletteModal({
   onSelect,
   onClose,
 }: ColorPaletteModalProps) {
+  const { buttonBg, buttonText } = useAppearance();
   const [draftColor, setDraftColor] = useState(selectedColor);
 
   useEffect(() => {
@@ -57,14 +59,14 @@ export default function ColorPaletteModal({
           </View>
 
           <TouchableOpacity
-            style={styles.doneButton}
+            style={[styles.doneButton, { backgroundColor: buttonBg }]}
             onPress={() => {
               onSelect(draftColor);
               onClose();
             }}
             activeOpacity={0.85}
           >
-            <Text style={styles.doneText}>Done</Text>
+            <Text style={[styles.doneText, { color: buttonText }]}>Done</Text>
           </TouchableOpacity>
         </Pressable>
       </Pressable>
@@ -123,7 +125,6 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     marginTop: spacing.md,
-    backgroundColor: colors.button,
     borderRadius: radii.pill,
     paddingVertical: 14,
     alignItems: 'center',
@@ -131,6 +132,5 @@ const styles = StyleSheet.create({
   doneText: {
     fontSize: 15,
     fontWeight: '700',
-    color: colors.text,
   },
 });

@@ -9,9 +9,17 @@ import React, {
 import {
   AppearanceMode,
   DEFAULT_CUSTOM_COLOR,
+  getAccentColor,
+  getAccentOnHeroColor,
+  getButtonBackground,
+  getButtonTextColor,
   getGradientColors,
   getHeroMutedColor,
   getHeroTextColor,
+  getNavActiveColor,
+  getNavActiveIconColor,
+  getNavHoverColor,
+  getNavIdleIconColor,
   isDarkAppearance,
 } from '@/constants/appearance';
 import {
@@ -27,6 +35,14 @@ type AppearanceContextValue = {
   isDark: boolean;
   heroText: string;
   heroMuted: string;
+  navActive: string;
+  navHover: string;
+  navActiveIcon: string;
+  navIdleIcon: string;
+  buttonBg: string;
+  buttonText: string;
+  accent: string;
+  accentOnHero: string;
   isReady: boolean;
   setMode: (mode: AppearanceMode) => void;
   setCustomColor: (color: string) => void;
@@ -77,6 +93,14 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
       isDark,
       heroText: getHeroTextColor(isDark),
       heroMuted: getHeroMutedColor(isDark),
+      navActive: getNavActiveColor(mode, customColor),
+      navHover: getNavHoverColor(mode, customColor),
+      navActiveIcon: getNavActiveIconColor(mode, customColor),
+      navIdleIcon: getNavIdleIconColor(mode),
+      buttonBg: getButtonBackground(mode, customColor),
+      buttonText: getButtonTextColor(mode, customColor),
+      accent: getAccentColor(mode, customColor),
+      accentOnHero: getAccentOnHeroColor(mode, customColor),
       isReady,
       setMode,
       setCustomColor,

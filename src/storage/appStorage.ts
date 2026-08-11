@@ -36,6 +36,19 @@ export type WeatherCache = {
   savedWeatherById: Record<string, LocationWeather>;
 };
 
+export type StoredUser = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type AuthSession = {
+  userId: string;
+  name: string;
+  email: string;
+};
+
 /** Reuse cached weather for this long before refetching. */
 export const WEATHER_CACHE_TTL_MS = 15 * 60 * 1000;
 
@@ -67,6 +80,14 @@ async function writeJson<T>(key: string, value: T): Promise<void> {
   }
 }
 
+async function removeKey(key: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch {
+    // Ignore.
+  }
+}
+
 function isAppearanceMode(value: unknown): value is AppearanceMode {
   return value === 'light' || value === 'dark' || value === 'custom';
 }
@@ -87,6 +108,10 @@ function isLocationWeather(value: unknown): value is LocationWeather {
   if (!value || typeof value !== 'object') return false;
   const weather = value as LocationWeather;
   return isPlace(weather.place) && !!weather.current && Array.isArray(weather.daily);
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }
 
 export async function loadAppearanceSettings(): Promise<AppearanceSettings> {
@@ -165,4 +190,108 @@ export async function saveWeatherCache(cache: WeatherCache): Promise<void> {
 export function isWeatherCacheFresh(cache: WeatherCache | null): boolean {
   if (!cache) return false;
   return Date.now() - cache.updatedAt < WEATHER_CACHE_TTL_MS;
+}
+
+export async function loadUsers(): Promise<StoredUser[]> {
+  const stored = await readJson<StoredUser[]>(STORAGE_KEYS.users);
+  if (!Array.isArray(stored)) return [];
+
+  return stored.filter(
+    (user): user is StoredUser =>
+      !!user &&
+      typeof user.id === 'string' &&
+      typeof user.name === 'string' &&
+      typeof user.email === 'string' &&
+      typeof user.password === 'string'
+  );
+}
+
+export async function saveUsers(users: StoredUser[]): Promise<void> {
+  await writeJson(STORAGE_KEYS.users, users);
+}
+
+export async function loadSession(): Promise<AuthSession | null> {
+  const stored = await readJson<Partial<AuthSession>>(STORAGE_KEYS.session);
+  if (
+    !stored ||
+    typeof stored.userId !== 'string' ||
+    typeof stored.name !== 'string' ||
+    typeof stored.email !== 'string'
+  ) {
+    return null;
+  }
+
+  return {
+    userId: stored.userId,
+    name: stored.name,
+    email: stored.email,
+  };
+}
+
+export async function saveSession(session: AuthSession): Promise<void> {
+  await writeJson(STORAGE_KEYS.session, session);
+}
+
+export async function clearSession(): Promise<void> {
+  await removeKey(STORAGE_KEYS.session);
+}
+
+export async function registerUser(input: {
+  name: string;
+  email: string;
+  password: string;
+}): Promise<{ ok: true } | { ok: false; message: string }> {
+  const name = input.name.trim();
+  const email = normalizeEmail(input.email);
+  const password = input.password;
+
+  if (name.length < 2) {
+    return { ok: false, message: 'Please enter your name.' };
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    return { ok: false, message: 'Please enter a valid email.' };
+  }
+  if (password.length < 4) {
+    return { ok: false, message: 'Password must be at least 4 characters.' };
+  }
+
+  const users = await loadUsers();
+  if (users.some((user) => user.email === email)) {
+    return { ok: false, message: 'An account with this email already exists.' };
+  }
+
+  const user: StoredUser = {
+    id: `user-${Date.now()}`,
+    name,
+    email,
+    password,
+  };
+
+  await saveUsers([...users, user]);
+  return { ok: true };
+}
+
+export async function loginUser(input: {
+  email: string;
+  password: string;
+}): Promise<{ ok: true; session: AuthSession } | { ok: false; message: string }> {
+  const email = normalizeEmail(input.email);
+  const password = input.password;
+
+  if (!email || !password) {
+    return { ok: false, message: 'Enter your email and password.' };
+  }
+
+  const users = await loadUsers();
+  const user = users.find((item) => item.email === email);
+  if (!user) {
+    return { ok: false, message: 'No account found with this email. Please sign up.' };
+  }
+  if (user.password !== password) {
+    return { ok: false, message: 'Incorrect password.' };
+  }
+
+  const session: AuthSession = { userId: user.id, name: user.name, email: user.email };
+  await saveSession(session);
+  return { ok: true, session };
 }

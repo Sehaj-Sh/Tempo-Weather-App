@@ -4,4 +4,6 @@ export const STORAGE_KEYS = {
   preferences: '@tempo/preferences',
   savedCities: '@tempo/savedCities',
   weatherCache: '@tempo/weatherCache',
+  users: '@tempo/users',
+  session: '@tempo/session',
 } as const;
