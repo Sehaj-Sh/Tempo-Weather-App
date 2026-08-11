@@ -34,7 +34,10 @@ export default function Index() {
 
         <ScrollView
           style={styles.scrollContent}
-          contentContainerStyle={styles.scrollInner}
+          contentContainerStyle={[
+            styles.scrollInner,
+            activeTab === 'auth' && styles.scrollInnerCentered,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -68,5 +71,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xs,
     paddingBottom: spacing.xxl,
+  },
+  scrollInnerCentered: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
 });

@@ -145,11 +145,11 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     paddingBottom: spacing.lg,
     alignItems: 'stretch',
+    justifyContent: 'center',
   },
   heading: {
     alignItems: 'center',
     gap: spacing.xs,
-    paddingTop: spacing.sm,
   },
   title: {
     ...type.title,
