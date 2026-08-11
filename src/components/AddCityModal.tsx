@@ -100,6 +100,7 @@ export default function AddCityModal({
               autoCorrect={false}
               autoCapitalize="words"
               returnKeyType="search"
+              underlineColorAndroid="transparent"
             />
             {loading ? <ActivityIndicator size="small" color={colors.link} /> : null}
           </View>
@@ -184,6 +185,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     padding: 0,
+    outlineWidth: 0,
+    outlineStyle: 'solid',
+    outlineColor: 'transparent',
   },
   list: {
     marginTop: spacing.sm,

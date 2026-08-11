@@ -103,6 +103,7 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
           autoCorrect={false}
           autoCapitalize="words"
           returnKeyType="search"
+          underlineColorAndroid="transparent"
         />
         {searching ? (
           <View style={styles.searchSpinner}>
@@ -164,7 +165,9 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
         <View style={styles.savedHeader}>
           <Text style={[styles.sectionHeader, { color: heroMuted }]}>Saved cities</Text>
           <TouchableOpacity hitSlop={8} onPress={() => setEditing((prev) => !prev)}>
-            <Text style={styles.editLink}>{editing ? 'Done' : 'Edit'}</Text>
+            <Text style={[styles.editLink, { color: heroMuted }]}>
+              {editing ? 'Done' : 'Edit'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -267,6 +270,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     fontWeight: '400',
+    outlineWidth: 0,
+    outlineStyle: 'solid',
+    outlineColor: 'transparent',
   },
   searchIcon: {
     position: 'absolute',
@@ -345,7 +351,6 @@ const styles = StyleSheet.create({
   },
   editLink: {
     ...type.caption,
-    color: colors.link,
     fontWeight: '600',
   },
   cityList: {
