@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import TempoLogo from '@/components/TempoLogo';
 import { spacing } from '@/constants/theme';
