@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Sun, Calendar, MapPin, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppearance } from '@/context/AppearanceContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 
 interface Props {
@@ -18,6 +19,7 @@ const tabs = [
 
 export default function BottomNav({ activeTab, setActiveTab }: Props) {
   const insets = useSafeAreaInsets();
+  const { navActive, navHover, navActiveIcon, navIdleIcon } = useAppearance();
   const highlighted = activeTab === 'auth' ? 'settings' : activeTab;
 
   return (
@@ -25,19 +27,30 @@ export default function BottomNav({ activeTab, setActiveTab }: Props) {
       {tabs.map(({ id, label, Icon }) => {
         const isActive = highlighted === id;
         return (
-          <TouchableOpacity
+          <Pressable
             key={id}
             onPress={() => setActiveTab(id)}
-            style={[styles.tabButton, isActive && styles.activeTab]}
-            activeOpacity={0.7}
+            style={({ pressed, hovered }) => [
+              styles.tabButton,
+              isActive && { backgroundColor: navActive },
+              !isActive && (pressed || hovered) && { backgroundColor: navHover },
+            ]}
           >
             <Icon
               size={20}
-              color={isActive ? colors.text : colors.textMuted}
+              color={isActive ? navActiveIcon : navIdleIcon}
               strokeWidth={isActive ? 2 : 1.6}
             />
-            <Text style={[styles.tabLabel, isActive && styles.activeLabel]}>{label}</Text>
-          </TouchableOpacity>
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isActive ? navActiveIcon : navIdleIcon },
+                isActive && styles.activeLabel,
+              ]}
+            >
+              {label}
+            </Text>
+          </Pressable>
         );
       })}
     </View>
@@ -65,15 +78,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     marginHorizontal: 2,
   },
-  activeTab: {
-    backgroundColor: colors.navActive,
-  },
   tabLabel: {
     ...type.tab,
-    color: colors.textMuted,
   },
   activeLabel: {
-    color: colors.text,
     fontWeight: '600',
   },
 });

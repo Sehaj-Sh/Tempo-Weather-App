@@ -10,6 +10,7 @@ import {
 import { MapPin, Plus, Trash2 } from 'lucide-react-native';
 import AddCityModal from '@/components/AddCityModal';
 import { useAppearance } from '@/context/AppearanceContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { useWeather } from '@/context/WeatherContext';
 import { PlaceResult } from '@/services/weatherApi';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
@@ -18,13 +19,19 @@ import {
   getWeatherIcon,
   getWeatherLabel,
 } from '@/utils/weatherCodes';
+import {
+  convertWindSpeed,
+  formatTemp,
+  windSpeedLabel,
+} from '@/utils/units';
 
 interface SearchScreenProps {
   onCitySelected?: () => void;
 }
 
 export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
-  const { heroMuted } = useAppearance();
+  const { heroMuted, accent } = useAppearance();
+  const { temperatureUnit, windSpeedUnit } = usePreferences();
   const {
     deviceWeather,
     devicePlace,
@@ -143,10 +150,13 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
                 <Text style={styles.cityName}>{deviceWeather.place.name}</Text>
                 <Text style={styles.cityDetails}>
                   {getWeatherLabel(deviceWeather.current.weatherCode)} · H{' '}
-                  {deviceWeather.current.high}° · L {deviceWeather.current.low}°
+                  {formatTemp(deviceWeather.current.high, temperatureUnit)} · L{' '}
+                  {formatTemp(deviceWeather.current.low, temperatureUnit)}
                 </Text>
               </View>
-              <Text style={styles.currentTemp}>{deviceWeather.current.temperature}°</Text>
+              <Text style={styles.currentTemp}>
+                {formatTemp(deviceWeather.current.temperature, temperatureUnit)}
+              </Text>
             </>
           ) : (
             <View style={styles.currentLeft}>
@@ -181,7 +191,7 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
                 ? getWeatherIcon(weather.current.weatherCode)
                 : MapPin;
               const detail = weather
-                ? `Wind ${weather.current.windSpeed} mph`
+                ? `Wind ${convertWindSpeed(weather.current.windSpeed, windSpeedUnit)} ${windSpeedLabel(windSpeedUnit)}`
                 : 'Loading…';
 
               return (
@@ -214,7 +224,9 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
                   ) : (
                     <View style={styles.cityRight}>
                       <Text style={styles.savedTemp}>
-                        {weather ? `${weather.current.temperature}°` : '—'}
+                        {weather
+                          ? formatTemp(weather.current.temperature, temperatureUnit)
+                          : '—'}
                       </Text>
                       <Text style={styles.detailText}>{detail}</Text>
                     </View>
@@ -227,14 +239,14 @@ export default function SearchScreen({ onCitySelected }: SearchScreenProps) {
       </View>
 
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, { borderColor: accent }]}
         activeOpacity={0.8}
         onPress={() => setAddModalOpen(true)}
       >
-        <View style={styles.plusCircle}>
-          <Plus size={14} color={colors.link} strokeWidth={2.2} />
+        <View style={[styles.plusCircle, { borderColor: accent }]}>
+          <Plus size={14} color={accent} strokeWidth={2.2} />
         </View>
-        <Text style={styles.addButtonText}>Add new city</Text>
+        <Text style={[styles.addButtonText, { color: accent }]}>Add new city</Text>
       </TouchableOpacity>
 
       <AddCityModal
@@ -416,7 +428,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderRadius: radii.card,
     borderWidth: 1.5,
-    borderColor: colors.borderStrong,
     backgroundColor: colors.overlay,
     flexDirection: 'row',
     alignItems: 'center',
@@ -428,12 +439,10 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: colors.link,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonText: {
-    color: colors.link,
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.2,

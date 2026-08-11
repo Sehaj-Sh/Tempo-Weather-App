@@ -83,3 +83,53 @@ export function getHeroTextColor(isDark: boolean) {
 export function getHeroMutedColor(isDark: boolean) {
   return isDark ? 'rgba(255,255,255,0.72)' : colors.textMuted;
 }
+
+export function getNavActiveColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return '#D7E7FB';
+  if (mode === 'dark') return 'rgba(183, 166, 240, 0.35)';
+  return `${customColor}40`;
+}
+
+export function getNavHoverColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return 'rgba(15, 35, 70, 0.06)';
+  if (mode === 'dark') return 'rgba(90, 70, 160, 0.12)';
+  return `${customColor}1F`;
+}
+
+/** Icon/label color on the white nav bar — always high contrast. */
+export function getNavActiveIconColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return colors.text;
+  if (mode === 'dark') return '#3D2F78';
+  return shadeHex(customColor, -56);
+}
+
+export function getNavIdleIconColor(mode: AppearanceMode) {
+  if (mode === 'dark') return '#6B5B95';
+  return colors.textMuted;
+}
+
+export function getButtonBackground(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return '#5B6FE8';
+  if (mode === 'dark') return '#B7A6F0';
+  return customColor;
+}
+
+export function getButtonTextColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return colors.white;
+  if (mode === 'dark') return '#1B1F3B';
+  return isDarkAppearance('custom', customColor) ? colors.white : colors.text;
+}
+
+/** Accent for controls on white cards / light surfaces. */
+export function getAccentColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return '#3F51C8';
+  if (mode === 'dark') return '#6B57C8';
+  return shadeHex(customColor, -36);
+}
+
+/** Accent for text/links sitting on the gradient background. */
+export function getAccentOnHeroColor(mode: AppearanceMode, customColor: string) {
+  if (mode === 'light') return '#2F3F9E';
+  if (mode === 'dark') return '#E8E0FF';
+  return isDarkAppearance('custom', customColor) ? colors.white : shadeHex(customColor, -48);
+}

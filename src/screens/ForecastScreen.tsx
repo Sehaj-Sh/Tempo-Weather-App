@@ -8,12 +8,15 @@ import {
 } from 'react-native';
 import { LocateFixed } from 'lucide-react-native';
 import { useAppearance } from '@/context/AppearanceContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { useWeather } from '@/context/WeatherContext';
 import { colors, radii, shadows, spacing, type } from '@/constants/theme';
 import { formatDayLabel, getWeatherIcon, getWeatherLabel } from '@/utils/weatherCodes';
+import { formatTemp } from '@/utils/units';
 
 export default function ForecastScreen() {
-  const { heroText, heroMuted } = useAppearance();
+  const { heroText, heroMuted, accent } = useAppearance();
+  const { temperatureUnit } = usePreferences();
   const {
     activeWeather,
     isLoading,
@@ -47,8 +50,8 @@ export default function ForecastScreen() {
             activeOpacity={0.85}
             onPress={() => void returnToDeviceLocation()}
           >
-            <LocateFixed size={14} color={colors.link} strokeWidth={2} />
-            <Text style={styles.myLocationText}>Back to my location</Text>
+            <LocateFixed size={14} color={accent} strokeWidth={2} />
+            <Text style={[styles.myLocationText, { color: accent }]}>Back to my location</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -79,8 +82,8 @@ export default function ForecastScreen() {
               </View>
 
               <View style={styles.tempCol}>
-                <Text style={styles.highText}>{item.high}°</Text>
-                <Text style={styles.lowText}>{item.low}°</Text>
+                <Text style={styles.highText}>{formatTemp(item.high, temperatureUnit)}</Text>
+                <Text style={styles.lowText}>{formatTemp(item.low, temperatureUnit)}</Text>
               </View>
             </View>
           );
@@ -132,7 +135,6 @@ const styles = StyleSheet.create({
   },
   myLocationText: {
     ...type.caption,
-    color: colors.link,
     fontWeight: '600',
   },
   list: {

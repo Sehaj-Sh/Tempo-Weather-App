@@ -64,7 +64,7 @@ export default function Index() {
               {activeTab === 'settings' && (
                 <SettingsScreen onLoginPress={() => setActiveTab('auth')} />
               )}
-              {activeTab === 'auth' && <AuthScreen onLogin={() => setActiveTab('current')} />}
+              {activeTab === 'auth' && <AuthScreen onSuccess={() => setActiveTab('current')} />}
             </>
           )}
         </ScrollView>
