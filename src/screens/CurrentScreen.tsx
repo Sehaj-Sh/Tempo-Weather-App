@@ -1,29 +1,30 @@
-import React from 'react';
-import {
-  ActivityIndicator,
-  Text,
-  View,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import { Thermometer, Droplets, Sun, Wind, LocateFixed } from 'lucide-react-native';
-import MetricCard from '@/components/MetricCard';
-import { useAppearance } from '@/context/AppearanceContext';
-import { usePreferences } from '@/context/PreferencesContext';
-import { useWeather } from '@/context/WeatherContext';
-import { colors, radii, shadows, spacing, type } from '@/constants/theme';
+import MetricCard from "@/components/MetricCard";
+import { colors, radii, shadows, spacing, type } from "@/constants/theme";
+import { useAppearance } from "@/context/AppearanceContext";
+import { usePreferences } from "@/context/PreferencesContext";
+import { useWeather } from "@/context/WeatherContext";
+import { convertWindSpeed, formatTemp, windSpeedLabel } from "@/utils/units";
 import {
   formatHourLabel,
   getUvLabel,
   getWeatherIcon,
   getWeatherLabel,
-} from '@/utils/weatherCodes';
+} from "@/utils/weatherCodes";
 import {
-  convertWindSpeed,
-  formatTemp,
-  windSpeedLabel,
-} from '@/utils/units';
+  Droplets,
+  LocateFixed,
+  Sun,
+  Thermometer,
+  Wind,
+} from "lucide-react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function CurrentScreen() {
   const { heroText, heroMuted, accent } = useAppearance();
@@ -42,7 +43,10 @@ export default function CurrentScreen() {
       <View style={styles.statusBlock}>
         {isLoading ? <ActivityIndicator color={colors.link} /> : null}
         <Text style={[styles.statusText, { color: heroMuted }]}>
-          {error || (isLoading ? 'Getting your local weather…' : 'No weather data yet.')}
+          {error ||
+            (isLoading
+              ? "Getting your local weather…"
+              : "No weather data yet.")}
         </Text>
       </View>
     );
@@ -54,31 +58,33 @@ export default function CurrentScreen() {
   const canReturnHome = !isViewingDeviceLocation && !!devicePlace;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.heroSection}>
-        <Text style={[styles.cityText, { color: heroMuted }]}>{place.label}</Text>
-        <Text style={[styles.tempText, { color: heroText }]}>
-          {formatTemp(current.temperature, temperatureUnit)}
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Current Location Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionLabel, { color: heroMuted }]}>
+          CURRENT LOCATION
         </Text>
-        <View style={styles.conditionRow}>
-          <ConditionIcon size={20} color={heroText} strokeWidth={1.7} />
-          <Text style={[styles.conditionText, { color: heroText }]}>
-            {getWeatherLabel(current.weatherCode)}
-          </Text>
-        </View>
-        <View style={styles.highLowRow}>
-          <Text style={[styles.highLowText, { color: heroMuted }]}>
-            H{' '}
-            <Text style={[styles.highLowValue, { color: heroText }]}>
-              {formatTemp(current.high, temperatureUnit)}
-            </Text>
-          </Text>
-          <View style={[styles.dot, { backgroundColor: heroMuted }]} />
-          <Text style={[styles.highLowText, { color: heroMuted }]}>
-            L{' '}
-            <Text style={[styles.highLowValue, { color: heroText }]}>
-              {formatTemp(current.low, temperatureUnit)}
-            </Text>
+        <View style={[styles.mainCard, shadows.card]}>
+          <View style={styles.mainCardContent}>
+            <Text style={styles.cityName}>{place.label}</Text>
+            <View style={styles.conditionRow}>
+              <ConditionIcon
+                size={16}
+                color={colors.textSecondary}
+                strokeWidth={1.7}
+              />
+              <Text style={styles.conditionText}>
+                {getWeatherLabel(current.weatherCode)} · H:{" "}
+                {formatTemp(current.high, temperatureUnit)} L:{" "}
+                {formatTemp(current.low, temperatureUnit)}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.mainTemp}>
+            {formatTemp(current.temperature, temperatureUnit)}
           </Text>
         </View>
 
@@ -89,116 +95,155 @@ export default function CurrentScreen() {
             onPress={() => void returnToDeviceLocation()}
           >
             <LocateFixed size={14} color={accent} strokeWidth={2} />
-            <Text style={[styles.myLocationText, { color: accent }]}>Back to my location</Text>
+            <Text style={[styles.myLocationText, { color: accent }]}>
+              Back to my location
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
 
-      <View style={styles.gridContainer}>
-        <MetricCard
-          icon={<Thermometer size={13} color={colors.textSecondary} strokeWidth={2} />}
-          title="Feels Like"
-          value={formatTemp(current.feelsLike, temperatureUnit)}
-        />
-        <MetricCard
-          icon={<Droplets size={13} color={colors.textSecondary} strokeWidth={2} />}
-          title="Humidity"
-          value={`${current.humidity}`}
-          unit="%"
-          progress={current.humidity}
-        />
-        <MetricCard
-          icon={<Sun size={13} color={colors.textSecondary} strokeWidth={2} />}
-          title="UV Index"
-          value={uv.label}
-          badge={uv.level}
-        />
-        <MetricCard
-          icon={<Wind size={13} color={colors.textSecondary} strokeWidth={2} />}
-          title="Wind Speed"
-          value={`${convertWindSpeed(current.windSpeed, windSpeedUnit)}`}
-          unit={windSpeedLabel(windSpeedUnit)}
-        />
+      {/* Hourly Forecast Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionLabel, { color: heroMuted }]}>HOURLY</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.hourlyRow}
+        >
+          {hourly.map((item, index) => {
+            const Icon = getWeatherIcon(item.weatherCode);
+            return (
+              <View
+                key={`${item.time}-${index}`}
+                style={[styles.hourlyCard, shadows.card]}
+              >
+                <Text style={styles.hourlyTime}>
+                  {formatHourLabel(item.time, index)}
+                </Text>
+                <Icon size={22} color={colors.accentDeep} strokeWidth={1.7} />
+                <Text style={styles.hourlyTemp}>
+                  {formatTemp(item.temperature, temperatureUnit)}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
       </View>
 
-      <Text style={[styles.sectionLabel, { color: heroMuted }]}>Hourly</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.hourlyRow}
-      >
-        {hourly.map((item, index) => {
-          const Icon = getWeatherIcon(item.weatherCode);
-          return (
-            <View key={`${item.time}-${index}`} style={[styles.hourlyCard, shadows.card]}>
-              <Text style={styles.hourlyTime}>{formatHourLabel(item.time, index)}</Text>
-              <Icon size={22} color={colors.accentDeep} strokeWidth={1.7} />
-              <Text style={styles.hourlyTemp}>
-                {formatTemp(item.temperature, temperatureUnit)}
-              </Text>
-            </View>
-          );
-        })}
-      </ScrollView>
-    </View>
+      {/* Detailed Metrics Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionLabel, { color: heroMuted }]}>
+          WEATHER DETAILS
+        </Text>
+        <View style={styles.gridContainer}>
+          <MetricCard
+            icon={
+              <Thermometer
+                size={13}
+                color={colors.textSecondary}
+                strokeWidth={2}
+              />
+            }
+            title="FEELS LIKE"
+            value={formatTemp(current.feelsLike, temperatureUnit)}
+          />
+          <MetricCard
+            icon={
+              <Droplets
+                size={13}
+                color={colors.textSecondary}
+                strokeWidth={2}
+              />
+            }
+            title="HUMIDITY"
+            value={`${current.humidity}`}
+            unit="%"
+            progress={current.humidity}
+          />
+          <MetricCard
+            icon={
+              <Sun size={13} color={colors.textSecondary} strokeWidth={2} />
+            }
+            title="UV INDEX"
+            value={uv.label}
+            badge={uv.level}
+          />
+          <MetricCard
+            icon={
+              <Wind size={13} color={colors.textSecondary} strokeWidth={2} />
+            }
+            title="WIND SPEED"
+            value={`${convertWindSpeed(current.windSpeed, windSpeedUnit)}`}
+            unit={windSpeedLabel(windSpeedUnit)}
+          />
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     gap: spacing.xl,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   statusBlock: {
     flexGrow: 1,
     minHeight: 360,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: spacing.md,
   },
   statusText: {
     ...type.bodyMedium,
-    textAlign: 'center',
+    textAlign: "center",
   },
-  heroSection: {
-    alignItems: 'center',
-    paddingTop: spacing.md,
+  section: {
+    gap: spacing.sm,
+  },
+  sectionLabel: {
+    ...type.label,
+    marginBottom: spacing.xs,
+  },
+  mainCard: {
+    backgroundColor: colors.cardWhite,
+    borderRadius: radii.card,
+    padding: spacing.xl,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  mainCardContent: {
+    flex: 1,
     gap: spacing.xs,
   },
-  cityText: {
-    ...type.headline,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  tempText: {
-    ...type.hero,
+  cityName: {
+    ...type.title,
+    color: colors.text,
   },
   conditionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   conditionText: {
-    ...type.headline,
-    fontWeight: '500',
-  },
-  highLowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  highLowText: {
     ...type.caption,
-    fontWeight: '500',
+    color: colors.textSecondary,
+    fontWeight: "500",
   },
-  highLowValue: {
-    fontWeight: '600',
+  mainTemp: {
+    ...type.hero,
+    fontSize: 52,
+    lineHeight: 56,
+    color: colors.text,
   },
   myLocationButton: {
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignSelf: "flex-start",
+    marginTop: spacing.xs,
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -209,22 +254,14 @@ const styles = StyleSheet.create({
   },
   myLocationText: {
     ...type.caption,
-    fontWeight: '600',
-  },
-  dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 2,
+    fontWeight: "600",
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  sectionLabel: {
-    ...type.label,
-    marginBottom: -spacing.sm,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: spacing.md,
   },
   hourlyRow: {
     gap: spacing.md,
@@ -232,12 +269,12 @@ const styles = StyleSheet.create({
     paddingRight: spacing.sm,
   },
   hourlyCard: {
-    width: 74,
-    height: 118,
-    backgroundColor: colors.card,
+    width: 78,
+    height: 120,
+    backgroundColor: colors.cardWhite,
     borderRadius: radii.card,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: spacing.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
@@ -245,12 +282,10 @@ const styles = StyleSheet.create({
   hourlyTime: {
     ...type.caption,
     color: colors.textMuted,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   hourlyTemp: {
-    fontSize: 17,
-    fontWeight: '600',
+    ...type.headline,
     color: colors.text,
-    letterSpacing: -0.2,
   },
 });
